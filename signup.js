@@ -1,4 +1,4 @@
-const API_URL = "https://timesense.onrender.com";
+const API_URL = "https://timesense.onrender.com/";
 
 function signup() {
   const email = document.getElementById("email").value;
