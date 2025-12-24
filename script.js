@@ -1,15 +1,24 @@
 const API_URL = "https://YOUR-RENDER-URL.onrender.com";
 
 /* =====================================
-   Persistent Storage
+   Authentication Guard
 ===================================== */
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+const user_id = localStorage.getItem("user_id");
+if (!user_id) {
+  window.location.href = "login.html";
+}
+
+/* =====================================
+   Persistent Task Storage (Per User)
+===================================== */
+const STORAGE_KEY = `tasks_${user_id}`;
+let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
 /* =====================================
    Utility Functions
 ===================================== */
 function saveTasks() {
-  localStorage.setItem("tasks", JSON.stringify(tasks));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 }
 
 function formatTime(seconds) {
@@ -33,14 +42,18 @@ function addTask() {
   fetch(`${API_URL}/predict`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ task: taskText, category })
+    body: JSON.stringify({
+      user_id: user_id,
+      task: taskText,
+      category: category
+    })
   })
     .then(res => res.json())
     .then(data => {
       const task = {
         id: Date.now(),
         text: taskText,
-        category,
+        category: category,
         predicted: data.predicted_time,
         elapsed: 0,
         running: false,
@@ -123,7 +136,7 @@ function stopTimer(id) {
 }
 
 /* =====================================
-   Complete Task → Learning Feedback
+   Complete Task → Learning Trigger
 ===================================== */
 function completeTask(id) {
   const task = tasks.find(t => t.id === id);
@@ -137,6 +150,7 @@ function completeTask(id) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      user_id: user_id,
       predicted: task.predicted,
       actual: actualMinutes,
       task: task.text
@@ -159,6 +173,15 @@ function deleteTask(id) {
   tasks = tasks.filter(t => t.id !== id);
   saveTasks();
   renderTasks();
+}
+
+/* =====================================
+   Logout (Optional but Useful)
+===================================== */
+function logout() {
+  localStorage.removeItem("user_id");
+  localStorage.removeItem(STORAGE_KEY);
+  window.location.href = "login.html";
 }
 
 /* =====================================

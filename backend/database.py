@@ -9,28 +9,43 @@ def init_db():
     conn = get_db()
     cur = conn.cursor()
 
-    # Global model state (bias)
+    # Users
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE,
+        password_hash TEXT
+    )
+    """)
+
+    # User-specific bias
     cur.execute("""
     CREATE TABLE IF NOT EXISTS model_state (
-        key TEXT PRIMARY KEY,
-        value REAL
+        user_id INTEGER,
+        key TEXT,
+        value REAL,
+        PRIMARY KEY (user_id, key)
     )
     """)
 
-    # Learned keyword weights
+    # User-specific learned keywords
     cur.execute("""
     CREATE TABLE IF NOT EXISTS keyword_weights (
-        keyword TEXT PRIMARY KEY,
-        weight REAL
+        user_id INTEGER,
+        keyword TEXT,
+        weight REAL,
+        PRIMARY KEY (user_id, keyword)
     )
     """)
 
-    # Word statistics for unsupervised learning
+    # User-specific word statistics
     cur.execute("""
     CREATE TABLE IF NOT EXISTS word_stats (
-        word TEXT PRIMARY KEY,
+        user_id INTEGER,
+        word TEXT,
         count INTEGER,
-        impact REAL
+        impact REAL,
+        PRIMARY KEY (user_id, word)
     )
     """)
 
