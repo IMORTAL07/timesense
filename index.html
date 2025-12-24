@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>TimeSense</title>
+  <title>TimeSense Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>TimeSense</h1>
-<p>Smart Academic Time Estimator</p>
+<h1>⏱ TimeSense Dashboard</h1>
 
-<input id="task" placeholder="Enter task description">
+<div class="task-input">
+  <input id="taskText" placeholder="Enter task description">
+  <select id="category">
+    <option value="assignment">Assignment</option>
+    <option value="lab">Lab</option>
+    <option value="study">Study</option>
+  </select>
+  <button onclick="addTask()">Add Task</button>
+</div>
 
-<select id="category">
-  <option value="assignment">Assignment</option>
-  <option value="lab">Lab</option>
-  <option value="study">Study</option>
-</select>
-
-<button onclick="predictTime()">Predict Time</button>
-
-<h3 id="result"></h3>
+<div id="taskList"></div>
 
 <script src="script.js"></script>
 </body>
