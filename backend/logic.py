@@ -11,21 +11,23 @@ KEYWORD_MULTIPLIER = {
     "revision": 1.2
 }
 
-# default bias (user usually underestimates)
-USER_BIAS = 1.3
+# adaptive bias (this is your ML-like learning)
+USER_BIAS = 1.3  
 
 def predict_time(task, category):
-    base_time = CATEGORY_BASE_TIME.get(category, 60)
+    base = CATEGORY_BASE_TIME.get(category, 60)
     multiplier = 1.0
 
     task = task.lower()
-    for keyword, factor in KEYWORD_MULTIPLIER.items():
-        if keyword in task:
+    for key, factor in KEYWORD_MULTIPLIER.items():
+        if key in task:
             multiplier *= factor
 
-    predicted = base_time * multiplier * USER_BIAS
+    predicted = base * multiplier * USER_BIAS
     return round(predicted, 2)
 
 def update_bias(predicted, actual):
     global USER_BIAS
-    USER_BIAS = actual / predicted
+    new_bias = actual / predicted
+    # smooth learning (prevents wild jumps)
+    USER_BIAS = (USER_BIAS * 0.7) + (new_bias * 0.3)

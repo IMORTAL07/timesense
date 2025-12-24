@@ -21,8 +21,8 @@ def predict():
 def feedback():
     data = request.json
     update_bias(data["predicted"], data["actual"])
+    return jsonify({"status": "learning updated"})
 
-    return jsonify({"status": "bias updated"})
 
 if __name__ == "__main__":
     import os
