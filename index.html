@@ -1,25 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>TimeSense Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>⏱ TimeSense Dashboard</h1>
+  <div class="app-container">
 
-<div class="task-input">
-  <input id="taskText" placeholder="Enter task description">
-  <select id="category">
-    <option value="assignment">Assignment</option>
-    <option value="lab">Lab</option>
-    <option value="study">Study</option>
-  </select>
-  <button onclick="addTask()">Add Task</button>
-</div>
+    <header>
+      <h1>TimeSense</h1>
+      <p class="subtitle">
+        Smart academic time estimation with adaptive learning
+      </p>
+    </header>
 
-<div id="taskList"></div>
+    <section class="input-section">
+      <input id="taskText" placeholder="Describe your task (e.g. FM lab report analysis)">
+      <select id="category">
+        <option value="assignment">Assignment</option>
+        <option value="lab">Lab</option>
+        <option value="study">Study</option>
+      </select>
+      <button class="primary" onclick="addTask()">Add Task</button>
+    </section>
 
-<script src="script.js"></script>
+    <section id="taskList" class="task-list"></section>
+
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>

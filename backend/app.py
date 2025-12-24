@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from logic import predict_time, update_bias
+from logic import predict_time, learn
 
 app = Flask(__name__)
 CORS(app)
@@ -8,20 +8,14 @@ CORS(app)
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
-    task = data["task"]
-    category = data["category"]
-
-    predicted_time = predict_time(task, category)
-
-    return jsonify({
-        "predicted_time": predicted_time
-    })
+    time = predict_time(data["task"], data["category"])
+    return jsonify({"predicted_time": time})
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
     data = request.json
-    update_bias(data["predicted"], data["actual"])
-    return jsonify({"status": "learning updated"})
+    learn(data["predicted"], data["actual"], data["task"])
+    return jsonify({"status": "model updated"})
 
 
 if __name__ == "__main__":

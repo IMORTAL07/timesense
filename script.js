@@ -1,92 +1,151 @@
 const API_URL = "https://timesense.onrender.com/";
 
-let tasks = [];
+/* =====================================
+   Persistent Storage
+===================================== */
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
+/* =====================================
+   Utility Functions
+===================================== */
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}m ${secs}s`;
+}
+
+/* =====================================
+   Add Task
+===================================== */
 function addTask() {
-  const text = document.getElementById("taskText").value;
+  const taskText = document.getElementById("taskText").value.trim();
   const category = document.getElementById("category").value;
+
+  if (!taskText) {
+    alert("Please enter a task description");
+    return;
+  }
 
   fetch(`${API_URL}/predict`, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ task: text, category })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ task: taskText, category })
   })
-  .then(res => res.json())
-  .then(data => {
-    const task = {
-      id: Date.now(),
-      text,
-      category,
-      predicted: data.predicted_time,
-      elapsed: 0,
-      timer: null,
-      startTime: null
-    };
-    tasks.push(task);
-    renderTasks();
-  });
+    .then(res => res.json())
+    .then(data => {
+      const task = {
+        id: Date.now(),
+        text: taskText,
+        category,
+        predicted: data.predicted_time,
+        elapsed: 0,
+        running: false,
+        intervalId: null
+      };
+
+      tasks.push(task);
+      saveTasks();
+      renderTasks();
+
+      document.getElementById("taskText").value = "";
+    })
+    .catch(() => alert("Prediction service unavailable"));
 }
 
+/* =====================================
+   Render Dashboard
+===================================== */
 function renderTasks() {
   const container = document.getElementById("taskList");
   container.innerHTML = "";
 
   tasks.forEach(task => {
-    const div = document.createElement("div");
-    div.className = "task-card";
+    const card = document.createElement("div");
+    card.className = "task-card";
 
-    div.innerHTML = `
+    card.innerHTML = `
       <div class="task-header">
-        <span>${task.text}</span>
-        <span>⏳ Est: ${task.predicted} min</span>
+        <strong>${task.text}</strong>
+        <span class="estimate">Est: ${task.predicted} min</span>
       </div>
 
       <div class="timer" id="timer-${task.id}">
-        Elapsed: ${Math.floor(task.elapsed / 60)} min
+        Elapsed: ${formatTime(task.elapsed)}
       </div>
 
-      <button class="small" onclick="startTimer(${task.id})">Start</button>
-      <button class="small" onclick="stopTimer(${task.id})">Stop</button>
-      <button class="small" onclick="completeTask(${task.id})">Complete</button>
+      <div class="task-controls">
+        <button onclick="startTimer(${task.id})">Start</button>
+        <button onclick="stopTimer(${task.id})">Stop</button>
+        <button onclick="completeTask(${task.id})">Complete</button>
+      </div>
     `;
 
-    container.appendChild(div);
+    container.appendChild(card);
   });
 }
 
+/* =====================================
+   Timer Controls
+===================================== */
 function startTimer(id) {
   const task = tasks.find(t => t.id === id);
-  if (task.timer) return;
+  if (!task || task.running) return;
 
-  task.startTime = Date.now();
-  task.timer = setInterval(() => {
+  task.running = true;
+
+  task.intervalId = setInterval(() => {
     task.elapsed += 1;
-    document.getElementById(`timer-${id}`).innerText =
-      `Elapsed: ${Math.floor(task.elapsed / 60)} min`;
+
+    const timerEl = document.getElementById(`timer-${id}`);
+    if (timerEl) {
+      timerEl.innerText = `Elapsed: ${formatTime(task.elapsed)}`;
+    }
+
+    saveTasks();
   }, 1000);
 }
 
 function stopTimer(id) {
   const task = tasks.find(t => t.id === id);
-  clearInterval(task.timer);
-  task.timer = null;
+  if (!task || !task.running) return;
+
+  clearInterval(task.intervalId);
+  task.intervalId = null;
+  task.running = false;
+  saveTasks();
 }
 
+/* =====================================
+   Complete Task → Learning Feedback
+===================================== */
 function completeTask(id) {
   const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
   stopTimer(id);
 
-  const actualMinutes = Math.ceil(task.elapsed / 60);
+  const actualMinutes = Math.max(1, Math.ceil(task.elapsed / 60));
 
   fetch(`${API_URL}/feedback`, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       predicted: task.predicted,
-      actual: actualMinutes
+      actual: actualMinutes,
+      task: task.text
     })
   });
 
   tasks = tasks.filter(t => t.id !== id);
+  saveTasks();
   renderTasks();
 }
+
+/* =====================================
+   Initialize on Page Load
+===================================== */
+renderTasks();
