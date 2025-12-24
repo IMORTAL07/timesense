@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:5000";
+const API_URL = "https://timesense.onrender.com";
 
 function predictTime() {
   const task = document.getElementById("task").value;
