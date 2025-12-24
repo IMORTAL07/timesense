@@ -1,15 +1,15 @@
 const API_URL = "https://timesense.onrender.com";
 
-function login() {
+function signup() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
   if (!email || !password) {
-    alert("Please enter email and password");
+    alert("Please fill all fields");
     return;
   }
 
-  fetch(`${API_URL}/login`, {
+  fetch(`${API_URL}/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password })
@@ -17,17 +17,14 @@ function login() {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        // 🔑 THIS IS THE IMPORTANT PART
-        localStorage.setItem("user_id", data.user_id);
-
-        // Redirect to dashboard
-        window.location.href = "index.html";
+        alert("Signup successful! Please login.");
+        window.location.href = "login.html";
       } else {
-        alert("Invalid email or password");
+        alert("User already exists.");
       }
     })
     .catch(err => {
-      alert("Login failed. Backend not reachable.");
+      alert("Signup failed. Check backend.");
       console.error(err);
     });
 }
