@@ -8,18 +8,24 @@ CORS(app)
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
-    time = predict_time(data["task"], data["category"])
-    return jsonify({"predicted_time": time})
+    predicted = predict_time(data["task"], data["category"])
+    return jsonify({"predicted_time": predicted})
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
     data = request.json
-    learn(data["predicted"], data["actual"], data["task"])
-    return jsonify({"status": "model updated"})
+    learn(
+        predicted=data["predicted"],
+        actual=data["actual"],
+        task=data["task"]
+    )
+    return jsonify({"status": "learning updated"})
 
+@app.route("/")
+def home():
+    return "TimeSense backend running"
 
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-

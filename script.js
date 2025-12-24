@@ -1,4 +1,4 @@
-const API_URL = "https://timesense.onrender.com/";
+const API_URL = "https://YOUR-RENDER-URL.onrender.com";
 
 /* =====================================
    Persistent Storage
@@ -81,6 +81,9 @@ function renderTasks() {
         <button onclick="startTimer(${task.id})">Start</button>
         <button onclick="stopTimer(${task.id})">Stop</button>
         <button onclick="completeTask(${task.id})">Complete</button>
+        <button onclick="deleteTask(${task.id})" style="color:#dc2626;">
+          Delete
+        </button>
       </div>
     `;
 
@@ -140,6 +143,19 @@ function completeTask(id) {
     })
   });
 
+  tasks = tasks.filter(t => t.id !== id);
+  saveTasks();
+  renderTasks();
+}
+
+/* =====================================
+   Delete Task (No Learning)
+===================================== */
+function deleteTask(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
+  stopTimer(id);
   tasks = tasks.filter(t => t.id !== id);
   saveTasks();
   renderTasks();
